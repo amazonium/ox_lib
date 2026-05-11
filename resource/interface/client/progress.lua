@@ -13,6 +13,8 @@ local playerState = LocalPlayer.state
 local createdProps = {}
 local maxProps = GetConvarInt('ox:progressPropLimit', 2)
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@class ProgressPropProps
 ---@field model string
 ---@field bone? number
@@ -77,6 +79,10 @@ local controls = {
 
 ---@param data ProgressProps
 local function startProgress(data)
+    if isUiKitRunning then
+        return exports.amzn_uikit:startProgress(data)
+    end
+
     playerState.invBusy = true
     progress = data
     local anim = data.anim
@@ -167,6 +173,10 @@ end
 ---@param data ProgressProps
 ---@return boolean?
 function lib.progressBar(data)
+    if isUiKitRunning then
+        return exports.amzn_uikit:progressBar(data)
+    end
+
     while progress ~= nil do Wait(0) end
 
     if not interruptProgress(data) then
@@ -185,6 +195,10 @@ end
 ---@param data ProgressProps
 ---@return boolean?
 function lib.progressCircle(data)
+    if isUiKitRunning then
+        return exports.amzn_uikit:progressBar(data)
+    end
+
     while progress ~= nil do Wait(0) end
 
     if not interruptProgress(data) then
@@ -202,6 +216,10 @@ function lib.progressCircle(data)
 end
 
 function lib.cancelProgress()
+    if isUiKitRunning then
+        return exports.amzn_uikit:cancelProgress()
+    end
+
     if not progress then
         error('No progress bar is active')
     end
@@ -211,6 +229,10 @@ end
 
 ---@return boolean
 function lib.progressActive()
+    if isUiKitRunning then
+        return exports.amzn_uikit:progressActive()
+    end
+
     return progress and true
 end
 

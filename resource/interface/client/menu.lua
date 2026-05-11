@@ -11,6 +11,8 @@ local registeredMenus = {}
 ---@type MenuProps | nil
 local openMenu
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@alias MenuPosition 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 ---@alias MenuChangeFunction fun(selected: number, scrollIndex?: number, args?: any, checked?: boolean)
 ---@alias MenuScrollSelectChangeFunction fun(selected: number, scrollIndex?: number, args?: any)
@@ -44,6 +46,10 @@ local openMenu
 ---@param data MenuProps
 ---@param cb? MenuChangeFunction
 function lib.registerMenu(data, cb)
+    if isUiKitRunning then
+        return exports.amzn_uikit:registerArrowMenu(data, cb)
+    end
+
     if not data.id then error('No menu id was provided.') end
     if not data.title then error('No menu title was provided.') end
     if not data.options then error('No menu options were provided.') end
@@ -54,6 +60,10 @@ end
 ---@param id string
 ---@param startIndex? number
 function lib.showMenu(id, startIndex)
+    if isUiKitRunning then
+        return exports.amzn_uikit:showArrowMenu(id, startIndex)
+    end
+
     local menu = registeredMenus[id]
     if not menu then
         error(('No menu with id %s was found'):format(id))
@@ -96,6 +106,10 @@ function lib.showMenu(id, startIndex)
 end
 ---@param onExit boolean?
 function lib.hideMenu(onExit)
+    if isUiKitRunning then
+        return exports.amzn_uikit:hideArrowMenu(onExit)
+    end
+
     local menu = openMenu
     openMenu = nil
 
@@ -116,6 +130,10 @@ end
 ---@param options MenuOptions | MenuOptions[]
 ---@param index? number
 function lib.setMenuOptions(id, options, index)
+    if isUiKitRunning then
+        return exports.amzn_uikit:setArrowMenuOptions(id, options, index)
+    end
+
     if index then
         registeredMenus[id].options[index] = options
     else
@@ -125,7 +143,13 @@ function lib.setMenuOptions(id, options, index)
 end
 
 ---@return string?
-function lib.getOpenMenu() return openMenu and openMenu.id end
+function lib.getOpenMenu()
+    if isUiKitRunning then
+        return exports.amzn_uikit:getOpenArrowMenu()
+    end
+
+    return openMenu and openMenu.id
+end
 
 RegisterNUICallback('confirmSelected', function(data, cb)
     cb(1)

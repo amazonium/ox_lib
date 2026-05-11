@@ -13,12 +13,18 @@
 ---@field style? string | table;
 ---@field alignIcon? 'top' | 'center';
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 local isOpen = false
 local currentText
 
 ---@param text string
 ---@param options? TextUIOptions
 function lib.showTextUI(text, options)
+    if isUiKitRunning then
+        return exports.amzn_uikit:showTextUI(text, options)
+    end
+
     if currentText == text then return end
 
     if not options then options = {} end
@@ -35,6 +41,10 @@ function lib.showTextUI(text, options)
 end
 
 function lib.hideTextUI()
+    if isUiKitRunning then
+        return exports.amzn_uikit:hideTextUI()
+    end
+
     SendNUIMessage({
         action = 'textUiHide'
     })
@@ -45,5 +55,9 @@ end
 
 ---@return boolean, string | nil
 function lib.isTextUIOpen()
+    if isUiKitRunning then
+        return exports.amzn_uikit:isTextUIOpen()
+    end
+
     return isOpen, currentText
 end

@@ -24,6 +24,8 @@
 ---@field items RadialItem[]
 ---@field [string] any
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 local isOpen = false
 
 ---@type table<string, RadialMenuProps>
@@ -42,6 +44,10 @@ local currentRadial = nil
 ---@param id string?
 ---@param option number?
 local function showRadial(id, option)
+    if isUiKitRunning then
+        return exports.amzn_uikit:showRadial(id, option)
+    end
+
     local radial = id and menus[id]
 
     if id and not radial then
@@ -113,6 +119,10 @@ end
 ---Registers a radial sub menu with predefined options.
 ---@param radial RadialMenuProps
 function lib.registerRadial(radial)
+    if isUiKitRunning then
+        return exports.amzn_uikit:registerRadial(radial)
+    end
+
     menus[radial.id] = radial
     radial.resource = GetInvokingResource()
 
@@ -122,10 +132,18 @@ function lib.registerRadial(radial)
 end
 
 function lib.getCurrentRadialId()
+    if isUiKitRunning then
+        return exports.amzn_uikit:getCurrentRadialId()
+    end
+
     return currentRadial and currentRadial.id
 end
 
 function lib.hideRadial()
+    if isUiKitRunning then
+        return exports.amzn_uikit:hideRadial()
+    end
+
     if not isOpen then return end
 
     SendNUIMessage({
@@ -143,6 +161,10 @@ end
 ---Registers an item or array of items in the global radial menu.
 ---@param items RadialMenuItem | RadialMenuItem[]
 function lib.addRadialItem(items)
+    if isUiKitRunning then
+        return exports.amzn_uikit:addRadialItem(items)
+    end
+
     local menuSize = #menuItems
     local invokingResource = GetInvokingResource()
 
@@ -178,6 +200,10 @@ end
 ---Removes an item from the global radial menu with the given id.
 ---@param id string
 function lib.removeRadialItem(id)
+    if isUiKitRunning then
+        return exports.amzn_uikit:removeRadialItem(id)
+    end
+
     local menuItem
 
     for i = 1, #menuItems do
@@ -196,6 +222,10 @@ end
 
 ---Removes all items from the global radial menu.
 function lib.clearRadialItems()
+    if isUiKitRunning then
+        return exports.amzn_uikit:clearRadialItems()
+    end
+
     table.wipe(menuItems)
 
     if isOpen then
@@ -297,6 +327,10 @@ local isDisabled = false
 ---Disallow players from opening the radial menu.
 ---@param state boolean
 function lib.disableRadial(state)
+    if isUiKitRunning then
+        return exports.amzn_uikit:disableRadial(state)
+    end
+
     isDisabled = state
 
     if isOpen and state then
@@ -304,43 +338,43 @@ function lib.disableRadial(state)
     end
 end
 
-lib.addKeybind({
-    name = 'ox_lib-radial',
-    description = locale('open_radial_menu'),
-    defaultKey = 'z',
-    onPressed = function()
-        if isDisabled then return end
+-- lib.addKeybind({
+--     name = 'ox_lib-radial',
+--     description = locale('open_radial_menu'),
+--     defaultKey = 'z',
+--     onPressed = function()
+--         if isDisabled then return end
 
-        if isOpen then
-            return lib.hideRadial()
-        end
+--         if isOpen then
+--             return lib.hideRadial()
+--         end
 
-        if #menuItems == 0 or IsNuiFocused() or IsPauseMenuActive() then return end
+--         if #menuItems == 0 or IsNuiFocused() or IsPauseMenuActive() then return end
 
-        isOpen = true
+--         isOpen = true
 
-        SendNUIMessage({
-            action = 'openRadialMenu',
-            data = {
-                items = menuItems
-            }
-        })
+--         SendNUIMessage({
+--             action = 'openRadialMenu',
+--             data = {
+--                 items = menuItems
+--             }
+--         })
 
-        lib.setNuiFocus(true)
-        SetCursorLocation(0.5, 0.5)
+--         lib.setNuiFocus(true)
+--         SetCursorLocation(0.5, 0.5)
 
-        while isOpen do
-            DisablePlayerFiring(cache.playerId, true)
-            DisableControlAction(0, 1, true)
-            DisableControlAction(0, 2, true)
-            DisableControlAction(0, 142, true)
-            DisableControlAction(2, 199, true)
-            DisableControlAction(2, 200, true)
-            Wait(0)
-        end
-    end,
-    -- onReleased = lib.hideRadial,
-})
+--         while isOpen do
+--             DisablePlayerFiring(cache.playerId, true)
+--             DisableControlAction(0, 1, true)
+--             DisableControlAction(0, 2, true)
+--             DisableControlAction(0, 142, true)
+--             DisableControlAction(2, 199, true)
+--             DisableControlAction(2, 200, true)
+--             Wait(0)
+--         end
+--     end,
+--     -- onReleased = lib.hideRadial,
+-- })
 
 AddEventHandler('onClientResourceStop', function(resource)
     for i = #menuItems, 1, -1 do

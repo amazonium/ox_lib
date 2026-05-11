@@ -10,6 +10,8 @@
 local alert = nil
 local alertId = 0
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@class AlertDialogProps
 ---@field header string;
 ---@field content string;
@@ -23,6 +25,10 @@ local alertId = 0
 ---@param timeout? number Force the window to timeout after `x` milliseconds.
 ---@return 'cancel' | 'confirm' | nil
 function lib.alertDialog(data, timeout)
+    if isUiKitRunning then
+        return exports.amzn_uikit:alertDialog(data, timeout)
+    end
+
     if alert then return end
 
     local id = alertId + 1
@@ -46,6 +52,9 @@ end
 
 ---@param reason? string An optional reason for the window to be closed.
 function lib.closeAlertDialog(reason)
+    if isUiKitRunning then
+        return exports.amzn_uikit:closeAlertDialog(reason)
+    end
     if not alert then return end
 
     lib.resetNuiFocus()
@@ -69,4 +78,10 @@ RegisterNUICallback('closeAlert', function(data, cb)
     promise:resolve(data)
 end)
 
-RegisterNetEvent('ox_lib:alertDialog', lib.alertDialog)
+RegisterNetEvent('ox_lib:alertDialog', function(data, timeout)
+    if isUiKitRunning then
+        return exports.amzn_uikit:alertDialog(data, timeout)
+    end
+
+    return lib.alertDialog(data, timeout)
+end)

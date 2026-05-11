@@ -8,6 +8,8 @@
 
 local input
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@class InputDialogRowProps
 ---@field type 'input' | 'number' | 'checkbox' | 'select' | 'slider' | 'multi-select' | 'date' | 'date-range' | 'time' | 'textarea' | 'color'
 ---@field label string
@@ -42,6 +44,10 @@ local input
 ---@param options InputDialogOptionsProps[]?
 ---@return string[] | number[] | boolean[] | nil
 function lib.inputDialog(heading, rows, options)
+    if isUiKitRunning then
+        return exports.amzn_uikit:inputDialog(heading, rows, options)
+    end
+
     if input then return end
     input = promise.new()
 
@@ -66,6 +72,10 @@ function lib.inputDialog(heading, rows, options)
 end
 
 function lib.closeInputDialog()
+    if isUiKitRunning then
+        return exports.amzn_uikit:closeInputDialog()
+    end
+
     if not input then return end
 
     lib.resetNuiFocus()

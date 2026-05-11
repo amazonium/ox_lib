@@ -9,6 +9,8 @@
 local contextMenus = {}
 local openContextMenu = nil
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@class ContextMenuItem
 ---@field title? string
 ---@field menu? string
@@ -54,6 +56,10 @@ end
 
 ---@param id string
 function lib.showContext(id)
+    if isUiKitRunning then
+        return exports.amzn_uikit:showContext(id)
+    end
+
     if not contextMenus[id] then error('No context menu of such id found.') end
 
     local data = contextMenus[id]
@@ -74,6 +80,10 @@ end
 
 ---@param context ContextMenuProps | ContextMenuProps[]
 function lib.registerContext(context)
+    if isUiKitRunning then
+        return exports.amzn_uikit:registerContext(context)
+    end
+
     for k, v in pairs(context) do
         if type(k) == 'number' then
             contextMenus[v.id] = v
@@ -85,10 +95,22 @@ function lib.registerContext(context)
 end
 
 ---@return string?
-function lib.getOpenContextMenu() return openContextMenu end
+function lib.getOpenContextMenu()
+    if isUiKitRunning then
+        return exports.amzn_uikit:getOpenContextMenu()
+    end
+
+    return openContextMenu
+end
 
 ---@param onExit boolean?
-function lib.hideContext(onExit) closeContext(nil, nil, onExit) end
+function lib.hideContext(onExit)
+    if isUiKitRunning then
+        return exports.amzn_uikit:hideContext(onExit)
+    end
+
+    closeContext(nil, nil, onExit)
+end
 
 RegisterNUICallback('openContext', function(data, cb)
     if data.back and contextMenus[openContextMenu].onBack then contextMenus[openContextMenu].onBack() end

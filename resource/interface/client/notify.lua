@@ -10,6 +10,8 @@
 ---@alias NotificationType 'info' | 'warning' | 'success' | 'error'
 ---@alias IconAnimationType 'spin' | 'spinPulse' | 'spinReverse' | 'pulse' | 'beat' | 'fade' | 'beatFade' | 'bounce' | 'shake'
 
+local isUiKitRunning = GetResourceState('amzn_uikit') == 'started'
+
 ---@class NotifyProps
 ---@field id? string
 ---@field title? string
@@ -31,6 +33,10 @@ local settings = require 'resource.settings'
 ---@param data NotifyProps
 ---@diagnostic disable-next-line: duplicate-set-field
 function lib.notify(data)
+    if isUiKitRunning then
+        return exports.amzn_uikit:notify(data)
+    end
+
     local sound = settings.notification_audio and data.sound
     data.sound = nil
     data.position = data.position or settings.notification_position
